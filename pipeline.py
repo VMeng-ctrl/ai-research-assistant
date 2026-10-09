@@ -83,6 +83,13 @@ def research(问题, log=print):
             log(f"读取失败 {item['url'][:50]} | {type(e).__name__}")
 
     doc = "\n\n".join(contents)
+    if not doc and results:
+        # 兜底：网页全读不了时，用搜索摘要当资料（薄但有，报告不至于开天窗）
+        contents = [f"【来源：{r['title']}】{r['snippet']}"
+                    for r in results if r.get("snippet")]
+        doc = "\n\n".join(contents)
+        if doc:
+            log(f"网页都读不了，改用 {len(contents)} 条搜索摘要当资料（报告会比较薄）")
     if not doc:
         return {"关键词": 关键词, "links": [], "要点": "",
                 "报告": "没有搜到可用资料，换个问法再试。", "审校意见": ""}
