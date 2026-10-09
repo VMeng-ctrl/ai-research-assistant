@@ -12,6 +12,13 @@ from tools import web_search, read_page
 if os.path.exists(r"C:\Users\24554\Projects\AI-Study\代码练习\.env"):
     load_dotenv(r"C:\Users\24554\Projects\AI-Study\代码练习\.env")
 
+if not os.getenv("DEEPSEEK_API_KEY"):
+    raise RuntimeError(
+        "缺少 DEEPSEEK_API_KEY：本地在 代码练习\\.env 里配置；"
+        "线上在 Streamlit Cloud 的 Settings -> Secrets 里配置"
+        "（DEEPSEEK_API_KEY=\"sk-...\"），保存后点 Reboot。"
+    )
+
 client = OpenAI(
     api_key=os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com/v1",
