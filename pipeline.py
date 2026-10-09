@@ -56,7 +56,7 @@ def research(问题, log=print):
     关键词 = 关键词.strip().strip("“”\"")
     log(f"搜索员改写为：{关键词}")
 
-    results = web_search(关键词, count=8)     # 多搜几条：前面的可能全是JS空壳站
+    results = web_search(关键词, count=8, log=log)   # 多搜几条：前面的可能全是JS空壳站
     log(f"搜索员找到 {len(results)} 条")
     for item in results:
         log(f" - {item['title'][:50]}")
