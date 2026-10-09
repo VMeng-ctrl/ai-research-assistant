@@ -95,9 +95,22 @@ def _relevant(results, query):
     return hits >= 2
 
 
+def _homepage_rate(results):
+    """结果里'官网首页'的占比（URL 路径为空或一根斜杠 = 首页）。
+    搜索'某公司新模型发布'却满屏该公司首页 = 引擎在敷衍我们。"""
+    from urllib.parse import urlparse
+    if not results:
+        return 1.0
+    home = sum(1 for r in results
+               if len(urlparse(r["url"]).path.strip("/")) < 4)
+    return home / len(results)
+
+
 def web_search(query, count=8, log=print):
-    """双引擎搜索：先 Bing，结果与问题不相关（如云服务器IP被降级）则换 DuckDuckGo。
-    都失败/都垃圾时 return []（调用方给用户友好提示）。"""
+    """双引擎搜索 + 两道质检：
+    ① 相关性（词有没有命中） ② 首页率（是不是正经文章而非官网首页）
+    Bing 两道质检都过才用；否则换 DuckDuckGo；都不行则合并排序取最优。"""
+    got = {}
     for name, engine in (("Bing", _search_bing), ("DuckDuckGo", _search_ddg)):
         try:
             rs = engine(query, count)
@@ -107,11 +120,31 @@ def web_search(query, count=8, log=print):
         if not rs:
             log(f"{name}：0 条结果")
             continue
-        if _relevant(rs, query):
-            log(f"{name}：{len(rs)} 条，相关性检查通过")
-            return rs
-        log(f"{name}：拿到 {len(rs)} 条但与问题对不上（疑似降级/垃圾结果），换引擎")
-    return []
+        rate = _homepage_rate(rs)
+        if not _relevant(rs, query):
+            log(f"{name}：{len(rs)} 条但与问题对不上（降级垃圾），换引擎")
+            got[name] = rs
+            continue
+        if rate >= 0.5:
+            log(f"{name}：{len(rs)} 条但 {int(rate*100)}% 是官网首页"
+                f"（没有正经文章），换引擎")
+            got[name] = rs
+            continue
+        log(f"{name}：{len(rs)} 条，两道质检通过（首页率{int(rate*100)}%）")
+        return rs
+    # 都没过：把两家结果合并，正经文章（首页率低）排前面，有多少用多少
+    merged, seen = [], set()
+    for rs in got.values():
+        for r in rs:
+            if r["url"] not in seen:
+                seen.add(r["url"])
+                merged.append(r)
+    if merged:
+        from urllib.parse import urlparse
+        merged.sort(key=lambda r: len(urlparse(r["url"]).path.strip("/")),
+                    reverse=True)
+        log(f"两家质检都没过，合并 {len(merged)} 条按'正经文章优先'兜底")
+    return merged[:count]
 
 
 if __name__ == "__main__":
