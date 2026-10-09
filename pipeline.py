@@ -62,7 +62,7 @@ def research(问题, log=print):
     results = web_search(关键词, count=8, log=log)   # 多搜几条：前面的可能全是JS空壳站
     log(f"搜索员找到 {len(results)} 条")
     for item in results:
-        log(f" - {item['title'][:50]}")
+        log(f" - {item['title'][:35]} | {item['url'][:55]}")
 
     # ========== 整理员（第1步）：把网页正文收回来 ==========
     collector = {

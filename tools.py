@@ -35,6 +35,24 @@ def _fetch(url, timeout=15):
     return urllib.request.urlopen(req, timeout=timeout).read().decode("utf-8", "ignore")
 
 
+def _unwrap_bing(url):
+    """还原 Bing 跳转链接（bing.com/ck/a?...&u=a1<base64>... -> 真实地址）。
+    不还原的话：路径看起来很深（首页率误判为0%），读取工具也会读到一团JS。"""
+    import base64
+    import urllib.parse
+    if "bing.com/ck/a" not in url:
+        return url
+    qs = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
+    u = qs.get("u", [""])[0]
+    if u.startswith("a1"):
+        try:
+            b = u[2:] + "=" * (-(len(u) - 2) % 4)
+            return base64.urlsafe_b64decode(b).decode("utf-8", "ignore")
+        except Exception:
+            return url
+    return url
+
+
 def _search_bing(query, count=8):
     """Bing 搜索（本地住宅 IP 效果好；云服务器数据中心 IP 可能拿到垃圾）"""
     import urllib.parse
@@ -47,7 +65,8 @@ def _search_bing(query, count=8):
         if not m:
             continue
         s = re.search(r'<p[^>]*>(.*?)</p>', block, re.S)
-        results.append({"title": clean(m.group(2)), "url": m.group(1),
+        results.append({"title": clean(m.group(2)),
+                        "url": _unwrap_bing(m.group(1)),
                         "snippet": clean(s.group(1)) if s else ""})
     return results
 
