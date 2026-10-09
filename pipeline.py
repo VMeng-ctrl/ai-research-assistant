@@ -56,7 +56,7 @@ def research(问题, log=print):
     关键词 = 关键词.strip().strip("“”\"")
     log(f"搜索员改写为：{关键词}")
 
-    results = web_search(关键词, count=3)
+    results = web_search(关键词, count=8)     # 多搜几条：前面的可能全是JS空壳站
     log(f"搜索员找到 {len(results)} 条")
     for item in results:
         log(f" - {item['title'][:50]}")
@@ -69,6 +69,9 @@ def research(问题, log=print):
     }
     contents = []
     for item in results:
+        if sum(len(c) for c in contents) >= 4000:   # 资料够本了就收工
+            log("资料已够 4000 字，提前收工")
+            break
         try:
             正文 = read_page(item["url"])
             if len(正文) < 100:                      # 空壳页（JS渲染的）跳过
