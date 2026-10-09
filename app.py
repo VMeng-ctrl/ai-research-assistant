@@ -17,7 +17,7 @@ from pipeline import research   # 只搬函数进来，__main__ 开关不会触�
 st.set_page_config(page_title="AI 研究助手", page_icon="🔍", layout="wide")
 
 st.title("🔍 AI 研究助手")
-st.caption("四人小队：搜索员 → 整理员 → 撰写员 → 审校员 · 版本 v4（还原Bing跳转链接）")
+st.caption("四人小队：搜索员 → 整理员 → 撰写员 → 审校员 · 版本 v5（实体还原+跳转还原）")
 
 问题 = st.text_input(
     "你想研究什么问题？",

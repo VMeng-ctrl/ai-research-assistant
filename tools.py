@@ -42,6 +42,7 @@ def _unwrap_bing(url):
     import urllib.parse
     if "bing.com/ck/a" not in url:
         return url
+    url = html.unescape(url)          # 关键：先把 &amp; 还原成 &，否则切不出 u 参数
     qs = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
     u = qs.get("u", [""])[0]
     if u.startswith("a1"):
@@ -66,7 +67,7 @@ def _search_bing(query, count=8):
             continue
         s = re.search(r'<p[^>]*>(.*?)</p>', block, re.S)
         results.append({"title": clean(m.group(2)),
-                        "url": _unwrap_bing(m.group(1)),
+                        "url": _unwrap_bing(html.unescape(m.group(1))),
                         "snippet": clean(s.group(1)) if s else ""})
     return results
 
