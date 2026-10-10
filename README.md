@@ -2,6 +2,10 @@
 
 输入一个问题，四个 AI 角色自动分工完成研究：搜资料 → 读网页 → 写报告 → 挑错。
 
+## 🌐 在线试用
+
+**https://ai-research-assistant-k9qetcuh3jbkw4tsslqy4j.streamlit.app/**
+
 ## 四人小队
 
 | 角色 | 干什么 | 用什么工具 |
